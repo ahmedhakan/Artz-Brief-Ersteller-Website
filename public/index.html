@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Patientenbrief-Generator</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background: linear-gradient(to bottom, #e0f7fa, #80deea);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .container {
+                background: #ffffff;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                padding: 20px;
+                max-width: 800px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+            h1 {
+                text-align: center;
+                color: #007bff;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                color: #333;
+            }
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                width: 100%;
+                padding: 10px;
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 16px;
+            }
+            .form-row {
+                display: flex;
+                gap: 10px;
+            }
+            .form-row .form-group {
+                flex: 1;
+            }
+            .form-row .small-input {
+                flex: 0.3;
+            }
+            .button {
+                display: block;
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+                color: #fff;
+                background-color: #007bff;
+                border: none;
+                border-radius: 5px;
+                margin-top: 10px;
+                transition: background-color 0.3s ease;
+            }
+            .button:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Patientenbrief-Generator</h1>
+            <div class="form-group">
+                <label for="letterType">Briefart wählen:</label>
+                <select id="letterType" onchange="toggleFields()">
+                    <option value="Ä">Ärtzliche Behandlung</option>
+                    <option value="L">Leichenschau</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="patientAddress">Patientenadresse:</label>
+                <textarea
+                    id="patientAddress"
+                    rows="4"
+                    placeholder="Adresse des Patienten eingeben"
+                ></textarea>
+            </div>
+            <div class="form-group">
+                <label for="patientAnrede">Anrede:</label>
+                <select id="patientAnrede" onchange="updatePatient()">
+                    <option value="Herr">Herr</option>
+                    <option value="Frau">Frau</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="patientName">Patientenname:</label>
+                    <input
+                        type="text"
+                        id="patientName"
+                        placeholder="Name des Patienten eingeben"
+                    />
+                </div>
+                <div class="form-group">
+                    <label for="patientBirthDate">Geburtsdatum:</label>
+                    <input type="date" id="patientBirthDate" />
+                </div>
+            </div>
+            <div class="form-group" id="deathDateGroup" style="display: none">
+                <label for="deathDate">Todesdatum:</label>
+                <input type="date" id="deathDate" />
+            </div>
+            <div class="form-group">
+                <label for="patientDiagnosis">Diagnose des Patienten:</label>
+                <input
+                    type="text"
+                    id="patientDiagnosis"
+                    placeholder="Diagnose des Patienten eingeben"
+                />
+            </div>
+            <div class="form-row">
+                <div class="form-group small-input">
+                    <label for="invoiceNumber">Re.-Nr.:</label>
+                    <input type="text" id="invoiceNumber" placeholder="250" />
+                </div>
+                <div class="form-group">
+                    <label for="invoiceDate">Rechnungsdatum:</label>
+                    <input type="date" id="invoiceDate" />
+                </div>
+            </div>
+            <input type="hidden" id="patient" value="Patient" />
+            <button class="button" onclick="generateLetter()">
+                Brief generieren
+            </button>
+        </div>
+
+        <script>
+            function setCurrentDate() {
+                const invoiceDateInput = document.getElementById("invoiceDate");
+                const currentDate = new Date().toISOString().split("T")[0];
+                invoiceDateInput.value = currentDate;
+            }
+
+            document.addEventListener("DOMContentLoaded", setCurrentDate);
+
+            function generateLetter() {
+                const letterType = document.getElementById("letterType").value;
+                const patientAnrede =
+                    document.getElementById("patientAnrede").value;
+                const deathDate =
+                    letterType === "L"
+                        ? document.getElementById("deathDate").value
+                        : "";
+                const patientAddress =
+                    document.getElementById("patientAddress").value;
+                const data = {
+                    invoiceNumber:
+                        document.getElementById("invoiceNumber").value,
+                    patientName: document.getElementById("patientName").value,
+                    patientAddress:
+                        document.getElementById("patientAddress").value,
+                    patientBirthDate:
+                        document.getElementById("patientBirthDate").value,
+                    invoiceDate: document.getElementById("invoiceDate").value,
+                    deathDate: deathDate,
+                    patientDiagnosis:
+                        document.getElementById("patientDiagnosis").value,
+                    patientAnrede: patientAnrede,
+                    letterType: letterType,
+                    patient: document.getElementById("patient").value,
+                };
+
+                fetch("/generate-letter", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                })
+                    .then((response) => response.blob())
+                    .then((blob) => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.style.display = "none";
+                        a.href = url;
+                        const patientName = data.patientName.replace(
+                            /\s/g,
+                            "_",
+                        );
+                        a.download = `${invoiceDate}{patientName}_.docx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                    })
+                    .catch((error) => console.error("Error:", error));
+            }
+
+            function toggleFields() {
+                const letterType = document.getElementById("letterType").value;
+                const deathDateGroup =
+                    document.getElementById("deathDateGroup");
+                if (letterType === "L") {
+                    deathDateGroup.style.display = "block";
+                } else {
+                    deathDateGroup.style.display = "none";
+                }
+            }
+
+            function updatePatient() {
+                const anrede = document.getElementById("patientAnrede").value;
+                const patientInput = document.getElementById("patient");
+                if (anrede === "Herr") {
+                    patientInput.value = "Patient";
+                } else if (anrede === "Frau") {
+                    patientInput.value = "Patientin";
+                }
+            }
+        </script>
+    </body>
+</html>

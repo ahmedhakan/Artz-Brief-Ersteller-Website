@@ -1,0 +1,13 @@
+{
+  "name": "patient-letter-generator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "easy-template-x": "^3.2.1",
+    "express": "^4.19.2"
+  }
+}
