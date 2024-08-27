@@ -9,3 +9,6 @@ Mit dieser Website kann man Word templates mit der gewünschten eingabe namen od
 Hier ist ein Vorschau fürs Website
 
 ![vorschau 2](https://github.com/user-attachments/assets/2a347b3f-b425-43ae-a83d-6d00cbe216b5)
+
+Wenn iht euren eigenen Word template machen möchtet könnt ihr hier easy template benutzen
+https://github.com/alonrbar/easy-template-x
